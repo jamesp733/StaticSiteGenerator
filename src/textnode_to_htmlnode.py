@@ -16,6 +16,3 @@ def text_node_to_html_node(text_node):
             return LeafNode(tag = "a", value= text_node.text, props = {"href": text_node.url})
         case TextType.IMAGE:
             return LeafNode(tag = "img", value= "", props = {"src":text_node.url, "alt":text_node.text})
-    
-def split_nodes_delimiter(old_nodes : list[TextNode],delimiter :str, text_type:TextType):
-    return
