@@ -50,7 +50,7 @@ def main():
     if len(sys.argv)>1:
         basepath = sys.argv[1]
         
-    copy_directory_to_location("static","public")
+    copy_directory_to_location("static","docs")
     generate_pages_recursive("content"  ,"template.html", "docs", basepath)
 
 
