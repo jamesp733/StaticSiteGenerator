@@ -46,7 +46,7 @@ def generate_pages_recursive(dir_path_content,template_path, dest_dir_path,basep
 
 
 def main():
-    basepath ="/"
+    basepath ="/StaticSiteGenerator/"
     if len(sys.argv)>1:
         basepath = sys.argv[1]
         
