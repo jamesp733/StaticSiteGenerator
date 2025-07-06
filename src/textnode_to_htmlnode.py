@@ -1,6 +1,6 @@
 from .textnode import TextType, TextNode
 from .htmlnode import HTMLNode, LeafNode, ParentNode
-
+from .inline_markdown import text_to_textnodes
 
 def text_node_to_html_node(text_node):
     match text_node.text_type:
