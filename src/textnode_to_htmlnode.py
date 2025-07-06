@@ -16,3 +16,10 @@ def text_node_to_html_node(text_node):
             return LeafNode(tag = "a", value= text_node.text, props = {"href": text_node.url})
         case TextType.IMAGE:
             return LeafNode(tag = "img", value= "", props = {"src":text_node.url, "alt":text_node.text})
+
+def text_to_htmlnodes(text: str)-> list[HTMLNode]:
+    textnodes = text_to_textnodes(text)
+    html_nodes = []
+    for textnode in textnodes:
+        html_nodes.append(text_node_to_html_node(textnode))
+    return html_nodes

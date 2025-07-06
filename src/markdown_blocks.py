@@ -1,7 +1,7 @@
 from enum import Enum
 from .htmlnode import HTMLNode, LeafNode, ParentNode
 from .inline_markdown import text_to_textnodes, TextNode, TextType
-from .textnode_to_htmlnode import text_node_to_html_node
+from .textnode_to_htmlnode import text_node_to_html_node, text_to_htmlnodes
 class BlockType(Enum):
     paragraph = "p"
     heading = "h"
@@ -10,6 +10,14 @@ class BlockType(Enum):
     unordered_list = "ul"
     ordered_list = "o1"
 
+
+
+def text_to_htmlnodes(text: str)-> list[HTMLNode]:
+    textnodes = text_to_textnodes(text)
+    html_nodes = []
+    for textnode in textnodes:
+        html_nodes.append(text_node_to_html_node(textnode))
+    return html_nodes
 
 def markdown_to_html_node(markdown) -> ParentNode:
     blocks = markdown_to_blocks(markdown)
@@ -31,10 +39,7 @@ def markdown_to_html_node(markdown) -> ParentNode:
                 block_tag = "p" 
                 p_lines = block_val.split("\n")
                 p_line = " ".join(p_lines)
-                textnodes = text_to_textnodes(p_line)
-                html_nodes = []
-                for textnode in textnodes:
-                    html_nodes.append(text_node_to_html_node(textnode))
+                html_nodes = text_to_htmlnodes(p_line)
                 node = ParentNode(block_tag,children=html_nodes)
                 
             case BlockType.heading:
@@ -44,10 +49,8 @@ def markdown_to_html_node(markdown) -> ParentNode:
                 h_count = split_input[0].count("#") #should floor this to 6, but number of h's
                 block_tag = f"h{h_count}" #Headings should be surrounded by a <h1> to <h6> tag, depending on the number of # characters.
                 block_val = " ".join(split_input[1::]) # [0] is just the ###'s.
-                textnodes = text_to_textnodes(block_val)
-                html_nodes = []
-                for textnode in textnodes:
-                    html_nodes.append(text_node_to_html_node(textnode))
+                
+                html_nodes = text_to_htmlnodes(block_val)
                 node = ParentNode(block_tag,children=html_nodes)
                 
             case BlockType.code:
@@ -68,10 +71,8 @@ def markdown_to_html_node(markdown) -> ParentNode:
                 for line in quote_lines:
                     quoted_line+=line[1:].strip() +"\n"
                     
-                textnodes = text_to_textnodes(quoted_line)
-                html_nodes = []
-                for textnode in textnodes:
-                    html_nodes.append(text_node_to_html_node(textnode))
+                html_nodes = text_to_htmlnodes(quoted_line)
+                
                 node = ParentNode(block_tag,children=html_nodes)
                 
                 
@@ -82,12 +83,7 @@ def markdown_to_html_node(markdown) -> ParentNode:
                 for line in split_input:
                     line = line.strip()
                     if line =="": continue
-                    html_nodes = []
-                    textnodes = text_to_textnodes(line) #will only produce 1 line
-                    for textnode in textnodes:
-                        
-                        html_nodes.append(text_node_to_html_node(textnode))
-                        
+                    html_nodes = text_to_htmlnodes(line)
                     children.append(ParentNode("li",children = html_nodes))
                 node = ParentNode(block_tag,children=children)
                 
@@ -97,13 +93,9 @@ def markdown_to_html_node(markdown) -> ParentNode:
                 block_tag = "ol" 
                 children = []
                 for line in split_input:
-                    line = line[2:].lstrip()
+                    line = line[2:].lstrip() #remove the starting number e.g. 1. or 2. 
                     if line == "": continue
-                    html_nodes = []
-                    textnodes = text_to_textnodes(line) #will only produce 1 line
-                    for textnode in textnodes:
-                        html_nodes.append(text_node_to_html_node(textnode))
-                        
+                    html_nodes = text_to_htmlnodes(line)
                     children.append(ParentNode("li",children = html_nodes))
                 node = ParentNode(block_tag,children=children)
         
