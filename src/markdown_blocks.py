@@ -1,0 +1,127 @@
+from enum import Enum
+from htmlnode import HTMLNode, LeafNode, ParentNode
+from inline_markdown import text_to_textnodes, TextNode, TextType
+from textnode_to_htmlnode import text_node_to_html_node
+class BlockType(Enum):
+    paragraph = "p"
+    heading = "h"
+    code = "pre<code>"
+    quote = "blockquote"
+    unordered_list = "ul"
+    ordered_list = "o1"
+
+
+def markdown_to_html_node(markdown) -> HTMLNode:
+    blocks = markdown_to_blocks(markdown)
+    main_blocks = []
+    
+    for block in blocks:
+        if block == "": continue #base case if recursion
+        block_type = block_to_block_type(block)
+        
+        
+        
+        block_val = block  #default case for a paragraph where theres nothing else
+        node = HTMLNode()
+        block_tag =""
+        
+
+        match block_type:
+            case BlockType.paragraph:
+                block_tag = "p" 
+                textnodes = text_to_textnodes(block_val)
+                html_nodes = []
+                for textnode in textnodes:
+                    html_nodes.append(text_node_to_html_node(textnode))
+                node = ParentNode(block_tag,children=html_nodes)
+                
+            case BlockType.heading:
+                split_input = block.split()
+                h_count = split_input[0].count("#") #should floor this to 6, but number of h's
+                block_tag = f"h{h_count}" #Headings should be surrounded by a <h1> to <h6> tag, depending on the number of # characters.
+                block_val = " ".join(split_input[1::]) # [0] is just the ###'s.
+                textnodes = text_to_textnodes(block_val)
+                html_nodes = []
+                for textnode in textnodes:
+                    html_nodes.append(text_node_to_html_node(textnode))
+                node = ParentNode(block_tag,children=html_nodes)
+                
+            case BlockType.code:
+                block_tag = "pre"
+                block_val = block_val[3:-3] #starts and ends with '''
+                node = ParentNode(block_tag ,children = [LeafNode("code",block_val)])
+                
+            case BlockType.quote:
+                block_tag = "blockquote" 
+                
+                
+                quote_lines = block_val.split("\n")
+                quoted_line =""
+                for line in quote_lines:
+                    quoted_line+=line[1:].strip() +"\n"
+                    
+                textnodes = text_to_textnodes(quoted_line)
+                html_nodes = []
+                for textnode in textnodes:
+                    html_nodes.append(text_node_to_html_node(textnode))
+                node = ParentNode(block_tag,children=html_nodes)
+                
+                
+            case BlockType.unordered_list:
+                split_input = block.split("- ")
+                block_tag = "ul" 
+                children = []
+                for line in split_input:
+                    if line.strip() =="": continue
+                    html_nodes = []
+                    textnodes = text_to_textnodes(line) #will only produce 1 line
+                    for textnode in textnodes:
+                        
+                        html_nodes.append(text_node_to_html_node(textnode))
+                        
+                    children.append(LeafNode("li",children = html_nodes))
+                node = ParentNode(block_tag,children=children)
+                
+                
+            case BlockType.ordered_list:
+                split_input = block.split("\n")
+                block_tag = "ol" 
+                children = []
+                for line in split_input:
+                    line = line.strip()
+                    if line == "": continue
+                    html_nodes = []
+                    textnodes = text_to_textnodes(line) #will only produce 1 line
+                    for textnode in textnodes:
+                        html_nodes.append(text_node_to_html_node(textnode))
+                        
+                    children.append(LeafNode("li",children = html_nodes))
+                node = ParentNode(block_tag,children=children)
+        
+        main_blocks.append(node)
+    return ParentNode("div",children = main_blocks)
+        
+        
+def markdown_to_blocks(markdown: str) -> list[str]:
+    markdown_blocks =markdown.split("\n\n")
+    stripped_blocks = []
+    for block in markdown_blocks:
+        stripped_block = block.strip()
+        if len(stripped_block) !=0:  
+            stripped_blocks.append(stripped_block)
+    return stripped_blocks
+
+def block_to_block_type(block: str) -> BlockType:
+    split_block = block.split("\n")
+    
+    if block.partition(" ")[0].count("#") ==  len(block.partition(" ")[0]) and len(block.partition(" ")[0]) <7:
+        return BlockType.heading
+    if block.startswith("```") and block.endswith("```"):
+        return BlockType.code
+    if len([line for line in split_block if line.startswith(">")]) == len(split_block):
+        return BlockType.quote
+    if all(block.startswith("- ") for block in split_block):
+        return BlockType.unordered_list
+    if all(block.startswith(f"{i+1}. ") for i,block in enumerate(split_block)):
+        return BlockType.ordered_list
+    return BlockType.paragraph
