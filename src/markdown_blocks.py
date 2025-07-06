@@ -1,7 +1,7 @@
 from enum import Enum
-from htmlnode import HTMLNode, LeafNode, ParentNode
-from inline_markdown import text_to_textnodes, TextNode, TextType
-from textnode_to_htmlnode import text_node_to_html_node
+from .htmlnode import HTMLNode, LeafNode, ParentNode
+from .inline_markdown import text_to_textnodes, TextNode, TextType
+from .textnode_to_htmlnode import text_node_to_html_node
 class BlockType(Enum):
     paragraph = "p"
     heading = "h"
@@ -11,7 +11,7 @@ class BlockType(Enum):
     ordered_list = "o1"
 
 
-def markdown_to_html_node(markdown) -> HTMLNode:
+def markdown_to_html_node(markdown) -> ParentNode:
     blocks = markdown_to_blocks(markdown)
     main_blocks = []
     
@@ -80,14 +80,15 @@ def markdown_to_html_node(markdown) -> HTMLNode:
                 block_tag = "ul" 
                 children = []
                 for line in split_input:
-                    if line.strip() =="": continue
+                    line = line.strip()
+                    if line =="": continue
                     html_nodes = []
                     textnodes = text_to_textnodes(line) #will only produce 1 line
                     for textnode in textnodes:
                         
                         html_nodes.append(text_node_to_html_node(textnode))
                         
-                    children.append(LeafNode("li",children = html_nodes))
+                    children.append(ParentNode("li",children = html_nodes))
                 node = ParentNode(block_tag,children=children)
                 
                 
@@ -96,14 +97,14 @@ def markdown_to_html_node(markdown) -> HTMLNode:
                 block_tag = "ol" 
                 children = []
                 for line in split_input:
-                    line = line.lstrip()
+                    line = line[2:].lstrip()
                     if line == "": continue
                     html_nodes = []
                     textnodes = text_to_textnodes(line) #will only produce 1 line
                     for textnode in textnodes:
                         html_nodes.append(text_node_to_html_node(textnode))
                         
-                    children.append(LeafNode("li",children = html_nodes))
+                    children.append(ParentNode("li",children = html_nodes))
                 node = ParentNode(block_tag,children=children)
         
         main_blocks.append(node)
@@ -133,3 +134,6 @@ def block_to_block_type(block: str) -> BlockType:
     if all(block.startswith(f"{i+1}. ") for i,block in enumerate(split_block)):
         return BlockType.ordered_list
     return BlockType.paragraph
+
+
+print(HTMLNode("str"))
