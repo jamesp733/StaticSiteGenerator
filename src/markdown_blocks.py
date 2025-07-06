@@ -29,7 +29,9 @@ def markdown_to_html_node(markdown) -> HTMLNode:
         match block_type:
             case BlockType.paragraph:
                 block_tag = "p" 
-                textnodes = text_to_textnodes(block_val)
+                p_lines = block_val.split("\n")
+                p_line = " ".join(p_lines)
+                textnodes = text_to_textnodes(p_line)
                 html_nodes = []
                 for textnode in textnodes:
                     html_nodes.append(text_node_to_html_node(textnode))
@@ -37,6 +39,8 @@ def markdown_to_html_node(markdown) -> HTMLNode:
                 
             case BlockType.heading:
                 split_input = block.split()
+                if split_input[0].count("#") >6:
+                    raise ValueError
                 h_count = split_input[0].count("#") #should floor this to 6, but number of h's
                 block_tag = f"h{h_count}" #Headings should be surrounded by a <h1> to <h6> tag, depending on the number of # characters.
                 block_val = " ".join(split_input[1::]) # [0] is just the ###'s.
@@ -49,6 +53,10 @@ def markdown_to_html_node(markdown) -> HTMLNode:
             case BlockType.code:
                 block_tag = "pre"
                 block_val = block_val[3:-3] #starts and ends with '''
+                if block_val.startswith("\n"):
+                    block_val = block_val[1::]
+                if not block_val.endswith("\n"):
+                    block_val += "\n"
                 node = ParentNode(block_tag ,children = [LeafNode("code",block_val)])
                 
             case BlockType.quote:
@@ -88,7 +96,7 @@ def markdown_to_html_node(markdown) -> HTMLNode:
                 block_tag = "ol" 
                 children = []
                 for line in split_input:
-                    line = line.strip()
+                    line = line.lstrip()
                     if line == "": continue
                     html_nodes = []
                     textnodes = text_to_textnodes(line) #will only produce 1 line
