@@ -92,15 +92,6 @@ def split_nodes_link(old_nodes):
     return new_nodes
 
 
-def markdown_to_blocks(markdown: str) -> list[str]:
-    markdown_blocks =markdown.split("\n\n")
-    stripped_blocks = []
-    for block in markdown_blocks:
-        stripped_block = block.strip()
-        if len(stripped_block) !=0:
-            stripped_blocks.append(stripped_block)
-    return stripped_blocks
-
 
 def extract_markdown_images(text: str) -> list[tuple]:
     return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)",text)

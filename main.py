@@ -1,12 +1,16 @@
 
 import os as os
 import shutil as shutil
+import src.htmlnode 
+
 
 
 
 def copy_directory_to_location(source: str, target: str):
     abs_src = os.path.abspath(source)
     abs_target = os.path.abspath(target)
+    print(abs_src)
+    print(abs_target)
     if os.path.exists(abs_target):
         shutil.rmtree(abs_target)
     os.mkdir(abs_target) # initial call - make the initial directory there (it will be deleted first)
@@ -15,11 +19,11 @@ def copy_directory_to_location(source: str, target: str):
         with os.scandir(abs_src) as entries:
             for entry in entries:
                 entry_path = entry.path #this is absolute because scandir is fed an abs path
-                target_path = abs_target + entry.name
-                if entry_path.is_file():
+                target_path = os.path.join(abs_target,entry.name)
+                if entry.is_file():
                     shutil.copy(entry_path, target_path)
                     print(f"File: {entry.name}")
-                elif entry_path.is_dir():
+                elif entry.is_dir():
                     copy_directory_to_location(entry_path, target_path)
                 else:
                     print(f"Other: {entry_path.name}")
@@ -32,7 +36,7 @@ def copy_directory_to_location(source: str, target: str):
     return
 
 def main():
-   copy_directory_to_location("src", "public")
+   copy_directory_to_location("static", "public")
     
 
 if __name__ == "__main__":
